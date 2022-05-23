@@ -31,9 +31,8 @@ void signal_handler(int signum)
 
 int main()
 {
-    pid_t   pid;
     
-    printf("server pid is : %d\n", getpid());
+    ft_printf("server pid is : %d\n", getpid());
     signal(SIGUSR1, &signal_handler);
     signal(SIGUSR2, &signal_handler);
     while (1)
