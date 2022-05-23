@@ -1,6 +1,8 @@
 #include "minitalk.h"
 
-void send_signal(int pid, char c)
+
+
+int send_signal(int pid, char c)
 {
     int i; 
 
@@ -8,9 +10,16 @@ void send_signal(int pid, char c)
     while (--i >= 0)
     {
         if (c && c >> i & 1)
-            kill(pid, SIGUSR1);
+        {
+            if (kill(pid, SIGUSR1) == -1)
+                exit(1);
+        
+        }
         else if (c)
-                kill(pid, SIGUSR2);
+        {
+            if (kill(pid, SIGUSR2) == -1)
+                exit(1);
+        }
         usleep(500);
     }
 }
@@ -31,7 +40,8 @@ void send_str(int pid, char *str)
         i = 8;
         while (--i >= 0)
         {
-            kill(pid, SIGUSR2);
+            if (kill(pid, SIGUSR2) == -1)
+                exit(1);
             usleep(500);
         }
     }
@@ -39,9 +49,9 @@ void send_str(int pid, char *str)
 
 int main(int argc, char **argv)
 {
-    if (argc < 3)
+    if (argc != 3)
     {
-        ft_printf("argc error");
+        ft_printf("invalid argument!");
         return(0);
     }
     else
