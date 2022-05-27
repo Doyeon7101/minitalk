@@ -49,6 +49,8 @@ void send_str(int pid, char *str)
 
 int main(int argc, char **argv)
 {
+    struct sigaction signals;
+
     if (argc != 3)
     {
         ft_printf("invalid argument!");

@@ -1,40 +1,42 @@
 #include "minitalk.h"
-char *str;
-int cnt;
 
-void signal_handler(int signum)
+void signal_handler(int signum, siginfo_t *info, void *(v))
 {
-    char c;
-    if (signum == SIGUSR1)
+    static char c;
+    static int cnt;
+    static int client_pid;
+
+    if ((client_pid != info->si_pid && cnt !=0))
     {
-        c = c << 1 | 1;
-        cnt++;
+        cnt = 0;
+        c = 0;
     }
-    if (signum == SIGUSR2)
+    if (signum == SIGUSR1 || signum == SIGUSR2)
     {
         c = c << 1;
+        if (signum == SIGUSR1)
+            c = c | 1;
         cnt++;
     }
     if (cnt == 8)
     {
-        cnt = 0;
         write(1, &c, 1);
-        if (c == '\0')
-        {
-            c ='\n';
-            write(1, &c, 1);
-            str = 0;
-        }
+        cnt = 0;
         c = 0;
     }
+    client_pid = info -> si_pid;
 }
 
-int main()
+int main(void)
 {
-    
+    struct sigaction    signals;
+
+    signals.sa_sigaction = &signal_handler;
     ft_printf("server pid is : %d\n", getpid());
-    signal(SIGUSR1, &signal_handler);
-    signal(SIGUSR2, &signal_handler);
+    sigaction(SIGUSR1, &signals, NULL);
+    sigaction(SIGUSR2, &signals, NULL);
+    
     while (1)
         pause(); 
+    return(1);
 }

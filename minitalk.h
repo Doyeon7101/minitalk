@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <sys/types.h>
-
+#include <sys/signal.h>
+#define _XOPEN_SOURCE 700
 int     ft_atoi(const char *str);
 int     ft_printf(const char *str, ...);
 
