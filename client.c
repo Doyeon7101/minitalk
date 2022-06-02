@@ -1,21 +1,16 @@
 #include "minitalk.h"
-void check_success(char c)
-{
-    if (c == 0)
-        ft_printf("SUCCESS!");
-    else
-    {
-        ft_printf("FAIL!");
-    }
-    exit(1);
-
-}
-void signal_handler(int signum)
+void signal_handler(int signum, siginfo_t *info, void *(v))
 {
     static char c;
     static int cnt;
+    static int server_pid;
     
-    cnt = 0;
+    (void)v;
+    if ((server_pid!= info->si_pid && cnt !=0))
+    {
+        cnt = 0;
+        c = 0;
+    }
     if (signum == SIGUSR1 || signum == SIGUSR2)
     {
         c = c << 1;
@@ -24,7 +19,15 @@ void signal_handler(int signum)
         cnt++;
     }
     if (cnt == 8)
-        check_success(c);
+    {
+        if (c == 0)
+        {
+            ft_printf("MESSAGE SENT SUCCESSFULLY\n");
+            exit(0);
+
+        }
+    }
+    server_pid = info -> si_pid;
     
 }
 void send_signal(int pid, char c)
@@ -74,23 +77,25 @@ void send_str(int pid, char *str)
 
 int main(int argc, char **argv)
 {
+    int server_pid;
     struct sigaction signals;
 
-    printf("client pid is : %d\n", getpid());
-
+    server_pid = ft_atoi(argv[1]);
     signals.sa_sigaction = &signal_handler;
-    signal(SIGUSR2, &signals);
-    signal(SIGUSR1, &signals);
+    signals.sa_flags = SA_SIGINFO;
+    sigaction(SIGUSR2, &signals, NULL);
     if (argc != 3)
     {
-        ft_printf("invalid argument!");
+        ft_printf("INVALID ARGUMENT!");
         return(0);
     }
-    else
-        send_str(ft_atoi(argv[1]), argv[2]);
-    
+    if (server_pid < 101 || server_pid > 99999)
+    {
+        ft_printf("INVALID PID!");
+        return(0);
+    }
+    send_str(ft_atoi(argv[1]), argv[2]);
     while (1)
         pause();
     return(1);
-
 }

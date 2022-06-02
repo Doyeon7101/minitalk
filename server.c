@@ -5,7 +5,7 @@ int end_of_char(int s_pid, char c)
     
     i = 8;
     write(1, &c, 1);
-    if (c == 0) //end_of_string
+    if (c == 0) 
     {
         while (i-- >= 0)
         {
@@ -49,10 +49,9 @@ int main(void)
 
     signals.sa_sigaction = &signal_handler;
     signals.sa_flags = SA_SIGINFO;
-    ft_printf("server pid is : %d\n", getpid());
     sigaction(SIGUSR1, &signals, NULL);
     sigaction(SIGUSR2, &signals, NULL);
-    
+    ft_printf("server pid is : %d\n", getpid());
     while (1)
         pause(); 
     return(1);

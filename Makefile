@@ -5,25 +5,26 @@ CC = gcc
 CFLAGS = -Wall -Werror -Wextra
 RM = rm -f
 
-SRC_S = server.c
-SRC_C = client.c
-SRC_U = tools.c ft_printf.c
+S_SERVER= server.c
+O_SERVER = $(S_SERVER:.c=.o)
 
-OBJ_S = $(SRC_S:.c=.o)
-OBJ_C = $(SRC_C:.c=.o)
-OBJ_U = $(SRC_U:.c=.o)
+S_CLIENT = client.c
+O_CLIENT = $(S_CLIENT:.c=.o)
+
+S_UTILS = tools.c ft_printf.c
+O_UTILS = $(S_UTILS:.c=.o)
 
 
 all: $(SERVER) $(CLIENT)
 
-$(SERVER): $(OBJ_S) $(OBJ_U)
+$(SERVER): $(O_SERVER) $(O_UTILS)
 			$(CC) $(CFLAGS) $^ -o $@
 
-$(CLIENT): $(OBJ_C) $(OBJ_U)
+$(CLIENT): $(O_CLIENT) $(O_UTILS)
 			$(CC) $(CFLAGS) $^ -o $@
 
 clean:
-	$(RM) $(OBJ_S) $(OBJ_C) $(OBJ_U)
+	$(RM) $(O_SERVER) $(O_CLIENT) $(O_UTILS)
 
 fclean: clean
 	$(RM) $(SERVER) $(CLIENT)
