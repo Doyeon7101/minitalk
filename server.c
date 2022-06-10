@@ -1,4 +1,7 @@
 #include "minitalk.h"
+
+struct sigaction server_signals;
+
 int end_of_char(int s_pid, char c)
 {
     int i;
@@ -16,7 +19,7 @@ int end_of_char(int s_pid, char c)
     return(0);
 }
 
-void signal_handler(int signum, siginfo_t *info, void *(v))
+void hdr_print_signal(int signum, siginfo_t *info, void *(v))
 {
     static char c;
     static int cnt;
@@ -43,15 +46,27 @@ void signal_handler(int signum, siginfo_t *info, void *(v))
     client_pid = info -> si_pid;
 }
 
+void hdr_check_connection(int signum, siginfo_t *info, void *(v))
+{
+    (void)v;
+    if (signum == SIGUSR1)
+    {
+        printf("init\n");
+        server_signals.sa_sigaction = hdr_print_signal;
+        sigaction(SIGUSR1, &server_signals, NULL);
+        sigaction(SIGUSR2, &server_signals, NULL);
+        kill(info->si_pid, SIGUSR1);
+    }
+}
+
 int main(void)
 {
-    struct sigaction    signals;
-
-    signals.sa_sigaction = &signal_handler;
-    signals.sa_flags = SA_SIGINFO;
-    sigaction(SIGUSR1, &signals, NULL);
-    sigaction(SIGUSR2, &signals, NULL);
     ft_printf("server pid is : %d\n", getpid());
+    server_signals.sa_sigaction = hdr_check_connection;
+    server_signals.sa_flags = SA_SIGINFO;
+    sigemptyset(&server_signals.sa_mask);
+    sigaction(SIGUSR1, &server_signals, NULL);
+    sigaction(SIGUSR2, &server_signals, NULL);
     while (1)
         pause(); 
     return(1);

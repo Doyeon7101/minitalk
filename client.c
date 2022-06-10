@@ -1,5 +1,8 @@
 #include "minitalk.h"
-void signal_handler(int signum, siginfo_t *info, void *(v))
+
+struct sigaction client_signals;
+
+void hdr_last_signal(int signum, siginfo_t *info, void *(v))
 {
     static char c;
     static int cnt;
@@ -28,8 +31,20 @@ void signal_handler(int signum, siginfo_t *info, void *(v))
         }
     }
     server_pid = info -> si_pid;
-    
 }
+
+void hdr_check_signal(int signum, siginfo_t *info, void *(v))
+{
+    (void)v;
+    (void)info;
+    if (signum == SIGUSR1)
+    {
+        client_signals.sa_sigaction = hdr_last_signal;
+        sigaction(SIGUSR1, &client_signals, NULL);
+        sigaction(SIGUSR2, &client_signals, NULL);
+    }
+}
+
 void send_signal(int pid, char c)
 {
     int i; 
@@ -75,27 +90,29 @@ void send_str(int pid, char *str)
     }
 }
 
+void check_connection(int server_pid)
+{
+    if (kill(server_pid, SIGUSR1) == -1)
+        exit(1);
+    pause();
+}
+
 int main(int argc, char **argv)
 {
     int server_pid;
-    struct sigaction signals;
 
     server_pid = ft_atoi(argv[1]);
-    signals.sa_sigaction = &signal_handler;
-    signals.sa_flags = SA_SIGINFO;
-    sigaction(SIGUSR2, &signals, NULL);
+    client_signals.sa_flags = SA_SIGINFO;
+    client_signals.sa_sigaction = hdr_check_signal;
+    sigemptyset(&client_signals.sa_mask); //sa_mask : 시그널을 처리할 동안 블록시킬 시그널을 모아놓은 변수. 
+    sigaction(SIGUSR1, &client_signals, NULL);
+    sigaction(SIGUSR2, &client_signals, NULL);
     if (argc != 3)
     {
         ft_printf("INVALID ARGUMENT!");
         return(0);
     }
-    if (server_pid < 101 || server_pid > 99999)
-    {
-        ft_printf("INVALID PID!");
-        return(0);
-    }
-    send_str(ft_atoi(argv[1]), argv[2]);
-    while (1)
-        pause();
+    check_connection(server_pid);
+    send_str(server_pid, argv[2]);
     return(1);
 }
